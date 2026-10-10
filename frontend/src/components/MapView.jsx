@@ -1,13 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 
+const STATE_CENTERS = {
+  'Delhi NCR': [28.6200, 77.2300],
+  'Uttar Pradesh': [26.8500, 80.9500],
+  'Uttarakhand': [30.1500, 78.3500],
+  'Maharashtra': [19.0500, 72.8800],
+  'Bihar': [25.6000, 85.1400],
+  'West Bengal': [22.5700, 88.3600],
+  'Assam': [26.1550, 91.7500],
+  'Gujarat': [23.0300, 72.5800]
+};
+
 export default function MapView({
   nodes,
   hazards,
   units,
   routeData,
   selectedOrigin,
-  selectedDest
+  selectedDest,
+  selectedState
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -24,13 +36,14 @@ export default function MapView({
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
+      const defaultCenter = STATE_CENTERS[selectedState] || [28.6139, 77.2090];
       const map = L.map(mapContainerRef.current, {
-        center: [28.6139, 77.2090],
-        zoom: 12,
+        center: defaultCenter,
+        zoom: 11,
         zoomControl: false
       });
 
-      // Standard Free OpenStreetMap Tiles (100% free, zero watermark)
+      // Standard OpenStreetMap Tiles (100% free, no watermark)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19
@@ -47,16 +60,33 @@ export default function MapView({
       layersRef.current.blockedRoute = L.layerGroup().addTo(map);
 
       mapInstanceRef.current = map;
+
+      // Handle Resize smoothly
+      const resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize();
+      });
+      resizeObserver.observe(mapContainerRef.current);
     }
 
     return () => {
-      // Cleanup on unmount
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
   }, []);
+
+  // Pan to State Center when Selected State Changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !selectedState) return;
+
+    if (!routeData) {
+      const center = STATE_CENTERS[selectedState] || [28.6139, 77.2090];
+      const zoom = selectedState === 'Uttarakhand' ? 9 : 11;
+      map.setView(center, zoom, { animate: true });
+    }
+  }, [selectedState, routeData]);
 
   // Update Infrastructure Nodes & Markers
   useEffect(() => {
@@ -246,7 +276,7 @@ export default function MapView({
     // Pan & Fit bounds
     if (allRoutePoints.length > 0) {
       const bounds = L.latLngBounds(allRoutePoints);
-      map.fitBounds(bounds, { padding: [100, 100], maxZoom: 14 });
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     }
   }, [routeData]);
 

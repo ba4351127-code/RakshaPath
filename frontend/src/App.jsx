@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import TelemetryCards from './components/TelemetryCards';
-import Sidebar from './components/Sidebar';
 import MapView from './components/MapView';
 import BottomDrawer from './components/BottomDrawer';
 import { 
@@ -44,10 +44,7 @@ export default function App() {
 
   // Computed Corridor Telemetry
   const [routeData, setRouteData] = useState(null);
-  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
-
-  // Drawer Toggles
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // 1. Initial Load: States, Districts, Hazards, Units
   useEffect(() => {
@@ -104,10 +101,10 @@ export default function App() {
     updateHazardEval();
   }, [waterDepth, damageLevel, debrisLevel, vehicleType]);
 
-  // 4. Compute Route Corridor whenever parameters change
+  // 4. Compute Route Corridor Function
   const computeRoute = useCallback(async () => {
     if (!selectedOrigin || !selectedDest) return;
-    setIsLoadingRoute(true);
+    setIsCalculating(true);
     const data = await calculateRoute(
       selectedOrigin,
       selectedDest,
@@ -119,12 +116,15 @@ export default function App() {
     if (data && data.success) {
       setRouteData(data);
     }
-    setIsLoadingRoute(false);
+    setIsCalculating(false);
   }, [selectedOrigin, selectedDest, vehicleType, waterDepth, damageLevel, debrisLevel]);
 
+  // Run initial route calculation once nodes are ready
   useEffect(() => {
-    computeRoute();
-  }, [computeRoute]);
+    if (selectedOrigin && selectedDest) {
+      computeRoute();
+    }
+  }, [selectedOrigin, selectedDest]);
 
   // Quick Metropolitan City Selection
   const handleSelectCity = (city) => {
@@ -150,7 +150,7 @@ export default function App() {
         }
       },
       async (err) => {
-        console.warn('Geolocation fallback to default center:', err);
+        console.warn('Geolocation fallback to default hub:', err);
         const nearest = await findNearestNode(28.6139, 77.2090);
         if (nearest) {
           setSelectedOrigin(nearest.id);
@@ -192,36 +192,9 @@ export default function App() {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans">
-      {/* 1. Immersive Full-Screen Leaflet Map */}
-      <MapView
-        nodes={allNodes}
-        hazards={hazards}
-        units={units}
-        routeData={routeData}
-        selectedOrigin={selectedOrigin}
-        selectedDest={selectedDest}
-      />
-
-      {/* 2. Floating Top Header & Search Bar */}
-      <Header
-        selectedState={selectedState}
-        onSelectCity={handleSelectCity}
-        onUseLocation={handleUseLocation}
-        onSimulateFlood={handleSimulateFlood}
-        onSelectSearchNode={handleSelectSearchNode}
-      />
-
-      {/* 3. Floating Route Telemetry HUD Cards */}
-      <TelemetryCards
-        routeData={routeData}
-        vehicleType={vehicleType}
-      />
-
-      {/* 4. Docked Control Sidebar Drawer */}
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
+      {/* 1. LEFT SIDE: Fixed Sidebar Control Panel */}
       <Sidebar
-        isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         statesData={statesData}
         selectedState={selectedState}
         onStateChange={(st) => { setSelectedState(st); setSelectedDistrict('All Districts'); }}
@@ -242,17 +215,50 @@ export default function App() {
         debrisLevel={debrisLevel}
         onDebrisLevelChange={(val) => setDebrisLevel(val)}
         hazardEvaluation={hazardEvaluation}
+        onCalculateRoute={computeRoute}
+        isCalculating={isCalculating}
         onResetForm={handleResetForm}
       />
 
-      {/* 5. Bottom Tabbed Drawer (Directions, Safety Comparison, Fleet, Incident Form) */}
-      <BottomDrawer
-        routeData={routeData}
-        selectedState={selectedState}
-        selectedDistrict={selectedDistrict}
-        units={units}
-        onIncidentReported={handleIncidentReported}
-      />
+      {/* 2. RIGHT SIDE: Main Content Area (Header + Telemetry + Map + Analysis Drawer) */}
+      <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-950">
+        {/* Top Header Search & Controls */}
+        <Header
+          selectedState={selectedState}
+          onSelectCity={handleSelectCity}
+          onUseLocation={handleUseLocation}
+          onSimulateFlood={handleSimulateFlood}
+          onSelectSearchNode={handleSelectSearchNode}
+        />
+
+        {/* Top Telemetry Metrics Banner */}
+        <TelemetryCards
+          routeData={routeData}
+          vehicleType={vehicleType}
+        />
+
+        {/* Interactive Leaflet Map Canvas */}
+        <div className="flex-1 relative w-full h-full">
+          <MapView
+            nodes={allNodes}
+            hazards={hazards}
+            units={units}
+            routeData={routeData}
+            selectedOrigin={selectedOrigin}
+            selectedDest={selectedDest}
+            selectedState={selectedState}
+          />
+        </div>
+
+        {/* Bottom Contextual Analysis Drawer */}
+        <BottomDrawer
+          routeData={routeData}
+          selectedState={selectedState}
+          selectedDistrict={selectedDistrict}
+          units={units}
+          onIncidentReported={handleIncidentReported}
+        />
+      </main>
     </div>
   );
 }
