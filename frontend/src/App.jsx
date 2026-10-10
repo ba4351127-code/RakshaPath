@@ -3,7 +3,13 @@ import WelcomeScreen from './components/WelcomeScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MapView from './components/MapView';
+import TimelineControl from './components/TimelineControl';
 import DetailedReportSection from './components/DetailedReportSection';
+import NationalOverviewModal from './components/NationalOverviewModal';
+import DispatchModal from './components/DispatchModal';
+import CrewMobileModal from './components/CrewMobileModal';
+import SimulationModal from './components/SimulationModal';
+import GuideModal from './components/GuideModal';
 import { 
   fetchStates, 
   fetchNodes, 
@@ -13,24 +19,28 @@ import {
   findNearestNode, 
   evaluateHazardRisk, 
   calculateRoute, 
-  resetNetworkGrid 
+  resetNetworkGrid,
+  subscribeBackendHealth
 } from './services/api';
 
 export default function App() {
   // STAGE 1: User Role & Onboarding State (null shows Welcome Screen)
   const [userRole, setUserRole] = useState(null);
 
-  // Navigation & Hierarchy State
+  // Backend connection state
+  const [backendState, setBackendState] = useState({ isOnline: false, mode: 'Initializing...' });
+
+  // Navigation & Hierarchy State (defaults to Prayagraj Pilot focus)
   const [statesData, setStatesData] = useState({});
-  const [selectedState, setSelectedState] = useState('Delhi NCR');
-  const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
+  const [selectedState, setSelectedState] = useState('Uttar Pradesh');
+  const [selectedDistrict, setSelectedDistrict] = useState('Prayagraj');
 
   // Network Nodes & Selection
   const [allNodes, setAllNodes] = useState([]);
   const [originNodes, setOriginNodes] = useState([]);
   const [destNodes, setDestNodes] = useState([]);
-  const [selectedOrigin, setSelectedOrigin] = useState('DEL_HQ');
-  const [selectedDest, setSelectedDest] = useState('DEL_MAYUR_SHELTER');
+  const [selectedOrigin, setSelectedOrigin] = useState('UP_PRY_SANGAM_CHOKE');
+  const [selectedDest, setSelectedDest] = useState('UP_PRY_SRN_HOSP');
 
   // Vehicle Profile
   const [vehicleType, setVehicleType] = useState('Ambulance');
@@ -41,15 +51,32 @@ export default function App() {
   const [debrisLevel, setDebrisLevel] = useState(3.5);
   const [hazardEvaluation, setHazardEvaluation] = useState(null);
 
+  // Predictive Flood Timeline (0 - 6 Hours) & Scenarios
+  const [forecastHour, setForecastHour] = useState(0);
+  const [scenarioId, setScenarioId] = useState('heavy');
+
   // Active Incidents & Fleet
   const [hazards, setHazards] = useState([]);
   const [units, setUnits] = useState([]);
 
-  // Computed Corridor Telemetry
+  // Computed Dual Corridor Telemetry
   const [routeData, setRouteData] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
 
-  // 1. Initial Load: States, Districts, Hazards, Units
+  // Modals state
+  const [showNationalOverview, setShowNationalOverview] = useState(false);
+  const [showDispatchModal, setShowDispatchModal] = useState(false);
+  const [showCrewMobileModal, setShowCrewMobileModal] = useState(false);
+  const [showSimulationModal, setShowSimulationModal] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+
+  // 1. Subscribe to Backend Connectivity Status
+  useEffect(() => {
+    const unsub = subscribeBackendHealth(setBackendState);
+    return unsub;
+  }, []);
+
+  // 2. Initial Data Loading
   useEffect(() => {
     async function initData() {
       const sData = await fetchStates();
@@ -62,7 +89,7 @@ export default function App() {
     initData();
   }, []);
 
-  // 2. Fetch Nodes & Shelters when State / District changes
+  // 3. Load Nodes & Shelters when State / District changes
   useEffect(() => {
     async function loadSectorNodes() {
       const nodes = await fetchNodes(selectedState);
@@ -70,23 +97,21 @@ export default function App() {
 
       // Filter Origins
       let filteredOrigins = nodes;
-      if (selectedDistrict !== 'All Districts') {
+      if (selectedDistrict && selectedDistrict !== 'All Districts') {
         filteredOrigins = nodes.filter((n) => n.district === selectedDistrict);
         if (filteredOrigins.length === 0) filteredOrigins = nodes;
       }
       setOriginNodes(filteredOrigins);
 
-      // Ensure valid origin selected
       if (!filteredOrigins.some((n) => n.id === selectedOrigin)) {
         if (filteredOrigins.length > 0) setSelectedOrigin(filteredOrigins[0].id);
       }
 
-      // Fetch Dest Shelters
+      // Fetch Shelters & Hospitals
       const shelters = await fetchShelters(selectedState, selectedDistrict);
       const validDest = shelters.length > 0 ? shelters : nodes;
       setDestNodes(validDest);
 
-      // Ensure valid destination selected
       if (!validDest.some((n) => n.id === selectedDest)) {
         const fallbackDest = validDest.find((n) => n.id !== selectedOrigin) || validDest[0];
         if (fallbackDest) setSelectedDest(fallbackDest.id);
@@ -95,7 +120,7 @@ export default function App() {
     loadSectorNodes();
   }, [selectedState, selectedDistrict]);
 
-  // 3. Evaluate Hazard Multiplier whenever sliders or vehicle changes
+  // 4. Evaluate Soft-Sigmoid Hazard Physics whenever parameters change
   useEffect(() => {
     async function updateHazardEval() {
       const evalResult = await evaluateHazardRisk(waterDepth, damageLevel, debrisLevel, vehicleType);
@@ -104,7 +129,7 @@ export default function App() {
     updateHazardEval();
   }, [waterDepth, damageLevel, debrisLevel, vehicleType]);
 
-  // 4. Compute Route Corridor Function
+  // 5. Compute Dual Route Corridors (Primary + Backup)
   const computeRoute = useCallback(async () => {
     if (!selectedOrigin || !selectedDest) return;
     setIsCalculating(true);
@@ -114,29 +139,38 @@ export default function App() {
       vehicleType,
       waterDepth,
       damageLevel,
-      debrisLevel
+      debrisLevel,
+      forecastHour,
+      scenarioId
     );
     if (data && data.success) {
       setRouteData(data);
     }
     setIsCalculating(false);
-  }, [selectedOrigin, selectedDest, vehicleType, waterDepth, damageLevel, debrisLevel]);
+  }, [selectedOrigin, selectedDest, vehicleType, waterDepth, damageLevel, debrisLevel, forecastHour, scenarioId]);
 
-  // Run initial route calculation once nodes are ready
+  // Run route calculation when origin, destination, vehicle, hour, or scenario change
   useEffect(() => {
     if (selectedOrigin && selectedDest) {
       computeRoute();
     }
-  }, [selectedOrigin, selectedDest]);
+  }, [selectedOrigin, selectedDest, vehicleType, forecastHour, scenarioId]);
 
-  // Quick Metropolitan City Selection
+  // City Switcher
   const handleSelectCity = (city) => {
     setSelectedState(city.state);
-    setSelectedDistrict(city.district);
-    setSelectedOrigin(city.node);
+    if (city.district) setSelectedDistrict(city.district);
+    if (city.node) setSelectedOrigin(city.node);
   };
 
-  // 1-Click Device Location Resolution
+  // Jump from Pan-India Modal
+  const handleDeployRegion = (region) => {
+    setSelectedState(region.state);
+    if (region.default_origin) setSelectedOrigin(region.default_origin);
+    if (region.default_dest) setSelectedDest(region.default_dest);
+  };
+
+  // GPS Device Locator
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -154,18 +188,20 @@ export default function App() {
       },
       async (err) => {
         console.warn('Geolocation fallback to default hub:', err);
-        const nearest = await findNearestNode(28.6139, 77.2090);
+        const nearest = await findNearestNode(25.4358, 81.8463);
         if (nearest) {
           setSelectedOrigin(nearest.id);
-          setSelectedState(nearest.state || 'Delhi NCR');
+          setSelectedState(nearest.state || 'Uttar Pradesh');
         }
       }
     );
   };
 
-  // Simulate Instant Flood Chokepoint Surge
+  // Instant Flood Surge Simulation
   const handleSimulateFlood = () => {
     setWaterDepth(85);
+    setScenarioId('extreme');
+    setForecastHour(3);
   };
 
   // Set Origin from Autocomplete Search Result
@@ -181,6 +217,8 @@ export default function App() {
     setDamageLevel(2.0);
     setDebrisLevel(1.5);
     setVehicleType('Ambulance');
+    setForecastHour(0);
+    setScenarioId('heavy');
     await resetNetworkGrid();
     const hList = await fetchHazards(selectedState);
     setHazards(hList);
@@ -191,6 +229,11 @@ export default function App() {
   const handleIncidentReported = async () => {
     const hList = await fetchHazards(selectedState);
     setHazards(hList);
+    computeRoute();
+  };
+
+  // Switch to backup route when roadblock is reported in crew view
+  const handleSwitchToBackupRoute = () => {
     computeRoute();
   };
 
@@ -235,11 +278,13 @@ export default function App() {
         onResetForm={handleResetForm}
         userRole={userRole}
         onSwitchRole={() => setUserRole(null)}
+        backendState={backendState}
+        onOpenCrewMobileModal={() => setShowCrewMobileModal(true)}
       />
 
-      {/* STAGE 2 (RIGHT) & STAGE 3: Main Content Area (Header + Map + Dedicated Report Section Below Map) */}
+      {/* STAGE 2 (RIGHT) & STAGE 3: Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950 relative">
-        {/* Top Header Search, Quick Jumpers, Role Controls */}
+        {/* Top Header Search, Quick Jumpers, Role Controls & Modals */}
         <Header
           selectedState={selectedState}
           onSelectCity={handleSelectCity}
@@ -248,10 +293,25 @@ export default function App() {
           onSelectSearchNode={handleSelectSearchNode}
           userRole={userRole}
           onSwitchRole={() => setUserRole(null)}
+          backendState={backendState}
+          onOpenNationalOverview={() => setShowNationalOverview(true)}
+          onOpenDispatchModal={() => setShowDispatchModal(true)}
+          onOpenSimulationModal={() => setShowSimulationModal(true)}
+          onOpenCrewMobileModal={() => setShowCrewMobileModal(true)}
+          onOpenGuideModal={() => setShowGuideModal(true)}
         />
 
-        {/* STAGE 2: Interactive Leaflet Map Canvas */}
-        <div className="w-full h-[420px] lg:h-[480px] shrink-0 relative border-b border-slate-800">
+        {/* Predictive Flood Timeline (0 - 6 Hours) */}
+        <TimelineControl
+          forecastHour={forecastHour}
+          onHourChange={(h) => setForecastHour(h)}
+          scenarioId={scenarioId}
+          onScenarioChange={(s) => setScenarioId(s)}
+          maxWaterDepthCm={waterDepth}
+        />
+
+        {/* Interactive Leaflet Map Canvas */}
+        <div className="w-full h-[440px] lg:h-[480px] shrink-0 relative border-b border-slate-800">
           <MapView
             nodes={allNodes}
             hazards={hazards}
@@ -263,7 +323,7 @@ export default function App() {
           />
         </div>
 
-        {/* STAGE 3: Prominent Detailed Incident & Route Report Section directly underneath the map */}
+        {/* STAGE 3: Dedicated Detailed Incident & Corridor Report Section */}
         <DetailedReportSection
           routeData={routeData}
           vehicleType={vehicleType}
@@ -275,8 +335,44 @@ export default function App() {
           units={units}
           onIncidentReported={handleIncidentReported}
           userRole={userRole}
+          onOpenCrewMobileModal={() => setShowCrewMobileModal(true)}
         />
       </main>
+
+      {/* Pan-India Flood Command Center Modal */}
+      <NationalOverviewModal
+        isOpen={showNationalOverview}
+        onClose={() => setShowNationalOverview(false)}
+        onSelectRegion={handleDeployRegion}
+      />
+
+      {/* Joint Hungarian Dispatch Optimizer Modal */}
+      <DispatchModal
+        isOpen={showDispatchModal}
+        onClose={() => setShowDispatchModal(false)}
+        selectedState={selectedState}
+      />
+
+      {/* In-Cab Crew Mobile Driver Modal */}
+      <CrewMobileModal
+        isOpen={showCrewMobileModal}
+        onClose={() => setShowCrewMobileModal(false)}
+        routeData={routeData}
+        vehicleType={vehicleType}
+        onSwitchToBackupRoute={handleSwitchToBackupRoute}
+      />
+
+      {/* Simulation Benchmark Modal */}
+      <SimulationModal
+        isOpen={showSimulationModal}
+        onClose={() => setShowSimulationModal(false)}
+      />
+
+      {/* Platform Guide Modal */}
+      <GuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+      />
     </div>
   );
 }

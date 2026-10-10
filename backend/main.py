@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from backend.database import init_db, get_db, Incident, RescueUnit
 from backend.hazard_engine import calculate_hazard_risk, VEHICLE_PROFILES, haversine_distance_km
 from backend.router import EmergencyRouter, NETWORK_NODES
+from backend.dispatch import solve_dispatch_assignment
 from backend.schemas import (
     IncidentCreate,
     RescueUnitCreate,
@@ -35,8 +36,10 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "*"
+        "https://rakshapath-live.vercel.app",
+        "https://raksha-path-zeta.vercel.app"
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -290,3 +293,41 @@ def reset_network(db: Session = Depends(get_db)):
     init_db()
     router_engine._build_base_network()
     return {"message": "RakshaPath network hazards and multi-state registries restored to baseline state."}
+
+
+@app.get("/api/dispatch/optimize")
+@app.post("/api/dispatch/optimize")
+def optimize_dispatch(state: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    """
+    Hungarian bipartite dispatch optimization matching incidents to available units
+    and nearest receiving hospital with available ICU beds.
+    """
+    # Fetch active incidents
+    inc_query = db.query(Incident).filter(Incident.status == "Active")
+    if state:
+        inc_query = inc_query.filter(Incident.state == state)
+    incidents = [i.to_dict() for i in inc_query.all()]
+
+    # Fetch units
+    unit_query = db.query(RescueUnit).filter(RescueUnit.status == "Available")
+    if state:
+        unit_query = unit_query.filter(RescueUnit.state == state)
+    units = [u.to_dict() for u in unit_query.all()]
+
+    # Collect hospital nodes with mock bed counts
+    hospitals = []
+    for k, v in NETWORK_NODES.items():
+        if v.get("category") == "Hospital":
+            if state and v.get("state") != state:
+                continue
+            hospitals.append({
+                "id": k,
+                "name": v.get("name"),
+                "lat": v.get("lat"),
+                "lon": v.get("lon"),
+                "icu_beds_free": 6
+            })
+
+    result = solve_dispatch_assignment(incidents, units, hospitals)
+    return result
+

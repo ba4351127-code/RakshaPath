@@ -1,6 +1,6 @@
 import networkx as nx
 from typing import List, Dict, Any, Tuple, Optional
-from backend.hazard_engine import calculate_hazard_risk, haversine_distance_km
+from backend.hazard_engine import calculate_hazard_risk, haversine_distance_km, compute_passability_probability
 
 # Comprehensive National Emergency Mobility Network Hubs
 NETWORK_NODES = {
@@ -916,8 +916,37 @@ class EmergencyRouter:
         except nx.NetworkXNoPath:
             shortest_path = safe_path
 
-        safe_summary = self._summarize_path(safe_path)
-        shortest_summary = self._summarize_path(shortest_path)
+        safe_summary = self._summarize_path(safe_path, vehicle_type=vehicle_type)
+        shortest_summary = self._summarize_path(shortest_path, vehicle_type=vehicle_type)
+
+        # Geographically diverse backup route by penalizing primary safe_path edges
+        original_weights = {}
+        for i in range(len(safe_path) - 1):
+            u_node = safe_path[i]
+            v_node = safe_path[i + 1]
+            if self.graph.has_edge(u_node, v_node):
+                original_weights[(u_node, v_node)] = self.graph[u_node][v_node]["weight"]
+                self.graph[u_node][v_node]["weight"] *= 3.5
+            if self.graph.has_edge(v_node, u_node):
+                original_weights[(v_node, u_node)] = self.graph[v_node][u_node]["weight"]
+                self.graph[v_node][u_node]["weight"] *= 3.5
+
+        try:
+            backup_path = nx.astar_path(
+                self.graph,
+                source=source,
+                target=target,
+                heuristic=self._euclidean_heuristic,
+                weight="weight"
+            )
+        except nx.NetworkXNoPath:
+            backup_path = safe_path
+        finally:
+            for (u_node, v_node), orig_w in original_weights.items():
+                if self.graph.has_edge(u_node, v_node):
+                    self.graph[u_node][v_node]["weight"] = orig_w
+
+        backup_summary = self._summarize_path(backup_path, vehicle_type=vehicle_type)
 
         is_detour_advised = safe_path != shortest_path
         safety_status = "SAFE CORRIDOR SECURED"
@@ -946,12 +975,13 @@ class EmergencyRouter:
                 "lon": self.graph.nodes[target]["lon"]
             },
             "safe_corridor": safe_summary,
+            "backup_corridor": backup_summary,
             "shortest_naive": shortest_summary,
             "is_detour_advised": is_detour_advised,
             "safety_status": safety_status
         }
 
-    def _summarize_path(self, path: List[str]) -> Dict[str, Any]:
+    def _summarize_path(self, path: List[str], vehicle_type: str = "Ambulance") -> Dict[str, Any]:
         waypoints = []
         segments = []
         total_distance = 0.0
@@ -959,6 +989,7 @@ class EmergencyRouter:
         total_time_mins = 0.0
         max_risk = 1.0
         all_passable = True
+        reliability = 1.0
 
         for i, node_id in enumerate(path):
             node = self.graph.nodes[node_id]
@@ -979,6 +1010,8 @@ class EmergencyRouter:
                 risk = edge_data["risk_multiplier"]
                 speed = edge_data["effective_speed_kmh"]
                 passable = edge_data["is_passable"]
+                p_e = compute_passability_probability(vehicle_type, edge_data["water_depth_cm"])
+                reliability *= p_e
 
                 segment_time = (dist / max(1.0, speed)) * 60.0
 
@@ -1015,8 +1048,10 @@ class EmergencyRouter:
             "average_risk_multiplier": round(avg_risk, 2),
             "max_risk_multiplier": round(max_risk, 2),
             "estimated_transit_time_min": round(total_time_mins, 1),
-            "is_fully_passable": all_passable
+            "is_fully_passable": all_passable,
+            "reliability_score": round(reliability, 4)
         }
+
 
     def get_network_geojson(self, state: Optional[str] = None) -> Dict[str, Any]:
         """Export nodes and edge hazards filtered by state if requested."""

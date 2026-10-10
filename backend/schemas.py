@@ -124,7 +124,9 @@ class RouteResponse(BaseModel):
     source: Dict[str, Any]
     target: Dict[str, Any]
     safe_corridor: SafeCorridorInfo
+    backup_corridor: Optional[Dict[str, Any]] = None
     shortest_naive: Optional[Dict[str, Any]] = None
     is_detour_advised: bool
     safety_status: str
     recommended_units: List[RecommendedUnit] = []
+

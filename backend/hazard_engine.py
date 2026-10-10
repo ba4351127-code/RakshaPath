@@ -5,6 +5,8 @@ from typing import Dict, Any, Tuple
 VEHICLE_PROFILES = {
     "Ambulance": {
         "max_water_clearance_cm": 30.0,
+        "d_safe_cm": 25.0,
+        "k_steepness": 0.18,
         "max_damage_tolerance": 5.0,
         "max_debris_tolerance": 4.0,
         "base_speed_kmh": 60.0,
@@ -13,6 +15,8 @@ VEHICLE_PROFILES = {
     },
     "NDRF Truck": {
         "max_water_clearance_cm": 85.0,
+        "d_safe_cm": 70.0,
+        "k_steepness": 0.12,
         "max_damage_tolerance": 8.0,
         "max_debris_tolerance": 7.5,
         "base_speed_kmh": 45.0,
@@ -22,6 +26,8 @@ VEHICLE_PROFILES = {
     "Flood Boat": {
         "max_water_clearance_cm": 999.0,  # Thrives in deep water
         "min_water_depth_cm": 20.0,       # Needs water to float
+        "d_safe_cm": 15.0,
+        "k_steepness": -0.15,
         "max_damage_tolerance": 9.0,
         "max_debris_tolerance": 6.0,
         "base_speed_kmh": 25.0,
@@ -30,6 +36,8 @@ VEHICLE_PROFILES = {
     },
     "Rapid Response": {
         "max_water_clearance_cm": 45.0,
+        "d_safe_cm": 38.0,
+        "k_steepness": 0.15,
         "max_damage_tolerance": 6.5,
         "max_debris_tolerance": 5.5,
         "base_speed_kmh": 65.0,
@@ -38,6 +46,8 @@ VEHICLE_PROFILES = {
     },
     "Evacuation Bus": {
         "max_water_clearance_cm": 40.0,
+        "d_safe_cm": 32.0,
+        "k_steepness": 0.16,
         "max_damage_tolerance": 4.0,
         "max_debris_tolerance": 3.0,
         "base_speed_kmh": 40.0,
@@ -45,6 +55,24 @@ VEHICLE_PROFILES = {
         "description": "Mass Evacuation Civilian Transport"
     }
 }
+
+
+def compute_passability_probability(vehicle_type: str, water_depth_cm: float) -> float:
+    """
+    Compute soft-sigmoid vehicle passability probability P(d) = 1 / (1 + exp(k * (d - d_safe))).
+    Returns a probability between 0.0 and 1.0.
+    """
+    profile = VEHICLE_PROFILES.get(vehicle_type, VEHICLE_PROFILES["Ambulance"])
+    if profile.get("is_amphibious"):
+        min_depth = profile.get("min_water_depth_cm", 20.0)
+        return 0.05 if water_depth_cm < min_depth else 0.98
+
+    d_safe = profile.get("d_safe_cm", 25.0)
+    k = profile.get("k_steepness", 0.18)
+    exponent = k * (water_depth_cm - d_safe)
+    clamped_exp = max(-20.0, min(20.0, exponent))
+    return round(1.0 / (1.0 + math.exp(clamped_exp)), 4)
+
 
 
 def calculate_water_risk(water_depth_cm: float, vehicle_type: str = "Ambulance") -> Tuple[float, bool]:
