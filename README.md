@@ -21,18 +21,20 @@
    - Accounts for **water inundation depth (cm)**, **structural damage level (0–10)**, and **debris obstruction (0–10)**.
    - Vehicle capability profiles: *Life Support Ambulance, NDRF Heavy Truck, Tactical Flood Boat, Rapid Response 4x4, Evacuation Bus*.
 
-3. **Google Maps–Style Location Selection**:
-   - Landmark search bar (`SGPGI Lucknow`, `Agra Fort`, `AIIMS Delhi`, `BHU Varanasi`, `KEM Mumbai`, `SSKM Kolkata`).
-   - 1-Click *"Use My Current Device Location"* automatic resolver.
-   - Quick metropolitan city presets across major Indian states (*Uttar Pradesh, Delhi NCR, Uttarakhand, Maharashtra, Bihar, West Bengal, Assam, Gujarat*).
+3. **Immersive GIS-First Tactical Interface**:
+   - Expansive 620px interactive OpenStreetMap topology map taking center stage (free of tile watermarks).
+   - Floating top hero bar with Google Maps–style landmark search, 1-click GPS device geolocation, and quick city jump presets (*Delhi, Lucknow, Agra, Varanasi, Dehradun, Mumbai*).
+   - Floating route metrics HUD directly above the map: Safe Corridor Distance, Est. Transit Time, Risk Multiplier, and Safety Grade.
+   - Collapsible docked control sidebar housing multi-state origin/shelter selection, mobility asset profiles, and real-time physical hazard calibration sliders.
 
-4. **2-Step Operational Workflow**:
-   - **Step 1:** Centered configuration form for location, vehicle profiles, and hazard calibrations.
-   - **Step 2:** Interactive OpenStreetMap topology map with top KPI toolbar, dual-route polylines (Safe vs. Compromised), and turn-by-turn waypoint analysis.
+4. **Embedded Standalone Engine for Cloud Deployment**:
+   - Features a built-in NetworkX A* routing engine fallback inside the Streamlit frontend.
+   - Automatically computes risk-weighted corridors locally if deployed on Streamlit Community Cloud without requiring an external FastAPI Uvicorn server (`Core: ONLINE (Embedded Engine)`).
 
-5. **Disaster Management Auth & Transmission Portal**:
+5. **Disaster Management Auth & Ground Transmission Portal**:
    - Tactical responder authentication with badge identification.
    - Real-time ground incident reporting terminal saving directly to SQLite database.
+   - Tabbed post-route analysis: turn-by-turn waypoints, comparative safety metrics, and regional fleet deployment ETAs.
 
 ---
 
