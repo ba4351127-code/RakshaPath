@@ -304,20 +304,20 @@ if not st.session_state["splash_done"]:
             RAKSHAPATH
         </h1>
         <p style="font-size: 1.15rem; color: #94a3b8; font-weight: 500; margin-top: 5px;">
-             रक्षापथ • Emergency Help & Safe Route Network (सुरक्षित रास्ता और आपातकालीन मदद)
+            Emergency Help & Safe Route Network
         </p>
         <div class="radar-bar">
             <div class="radar-fill"></div>
         </div>
         <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; color: #38bdf8; letter-spacing: 0.5px;">
-            [Checking road conditions and finding safe routes / सुरक्षित रास्ते लोड हो रहे हैं...]
+            [Checking road conditions and finding safe routes...]
         </p>
     </div>
     """, unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns([1, 1, 1])
     with c2:
-        if st.button("⚡ Open Map Directly (Skip / तुरंत शुरू करें)", use_container_width=True):
+        if st.button("⚡ Open Map Directly (Skip)", use_container_width=True):
             st.session_state["splash_done"] = True
             st.rerun()
 
@@ -334,24 +334,24 @@ if not st.session_state["authenticated"]:
     <div class="login-box">
         <div style="text-align: center; font-size: 3rem; margin-bottom: 10px;">🛡️</div>
         <h3 style="text-align: center; margin-bottom: 4px; color: #0f172a;">Emergency Help & Rescue Portal</h3>
-        <p style="text-align: center; font-size: 0.88rem; color: #64748b; margin-bottom: 20px;">आपातकालीन सहायता एवं बचाव पोर्टल • Find safe routes away from floods & roadblocks</p>
+        <p style="text-align: center; font-size: 0.88rem; color: #64748b; margin-bottom: 20px;">Emergency Help & Rescue Portal • Find safe routes away from floods & roadblocks</p>
     </div>
     """, unsafe_allow_html=True)
 
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.container(border=True):
-            login_tab1, login_tab2 = st.tabs(["🔐 Rescue Officer / Staff Login (अधिकारी लॉगिन)", "⚡ Citizen & Volunteer Access (नागरिक व स्वयंसेवक)"])
+            login_tab1, login_tab2 = st.tabs(["🔐 Rescue Officer / Staff Login", "⚡ Citizen & Volunteer Access"])
 
             with login_tab1:
-                personnel_id = st.text_input("Officer ID or Name (आईडी या नाम)", value="NDRF-7701")
-                access_code = st.text_input("Passcode / PIN (पासकोड)", type="password", value="RAKSHA2026")
+                personnel_id = st.text_input("Officer ID or Name", value="NDRF-7701")
+                access_code = st.text_input("Passcode / PIN", type="password", value="RAKSHA2026")
                 assigned_role = st.selectbox(
-                    "Department / Role (विभाग)",
+                    "Department / Role",
                     ["Emergency Responder (NDRF/SDRF)", "Ambulance & Medical Team", "Relief Volunteer / Civil Defense", "District Administration"]
                 )
 
-                if st.button("Open Safe Route Portal (शुरू करें)", type="primary", use_container_width=True):
+                if st.button("Open Safe Route Portal", type="primary", use_container_width=True):
                     if personnel_id.strip() and access_code.strip():
                         st.session_state["authenticated"] = True
                         st.session_state["user_role"] = assigned_role
@@ -364,8 +364,8 @@ if not st.session_state["authenticated"]:
 
             with login_tab2:
                 st.info("Citizens, field volunteers, and evaluators can access the map and safe routes instantly without a password.")
-                guest_name = st.text_input("Your Name (आपका नाम)", value="Citizen Responder")
-                if st.button("Open Safe Route Portal (सीधे शुरू करें)", type="secondary", use_container_width=True):
+                guest_name = st.text_input("Your Name", value="Citizen Responder")
+                if st.button("Open Safe Route Portal Directly", type="secondary", use_container_width=True):
                     st.session_state["authenticated"] = True
                     st.session_state["user_role"] = "Citizen / Responder"
                     st.session_state["user_id"] = guest_name
@@ -663,20 +663,20 @@ with st.sidebar:
     # SECTION 1: WHERE ARE YOU GOING?
     with st.expander("📍 Where are you going? (Select Start & Safe Place)", expanded=True):
         cur_state_idx = all_states.index(st.session_state["selected_state"]) if st.session_state["selected_state"] in all_states else 0
-        selected_state = st.selectbox("Select State (राज्य)", all_states, index=cur_state_idx, key="sb_state")
+        selected_state = st.selectbox("State", all_states, index=cur_state_idx, key="sb_state")
         st.session_state["selected_state"] = selected_state
 
         districts = state_data.get(selected_state, [])
-        district_options = ["All Districts (सभी ज़िले)"] + districts
+        district_options = ["All Districts"] + districts
         cur_dist_idx = district_options.index(st.session_state["selected_district"]) if st.session_state["selected_district"] in district_options else 0
-        selected_district = st.selectbox("Select District / City (ज़िला / शहर)", district_options, index=cur_dist_idx, key="sb_district")
+        selected_district = st.selectbox("District / City", district_options, index=cur_dist_idx, key="sb_district")
         st.session_state["selected_district"] = selected_district
 
         state_nodes = fetch_nodes(state=selected_state)
         if not state_nodes:
             state_nodes = get_guaranteed_fallback_nodes(selected_state)
 
-        if selected_district not in ["All Districts", "All Districts (सभी ज़िले)"]:
+        if selected_district != "All Districts":
             origin_nodes = [n for n in state_nodes if n.get("district") == selected_district]
             if not origin_nodes:
                 origin_nodes = state_nodes
@@ -692,7 +692,7 @@ with st.sidebar:
         if orig_keys:
             cur_orig_key = next((k for k, v in origin_options.items() if v == st.session_state.get("origin_node_id")), orig_keys[0])
             orig_idx = orig_keys.index(cur_orig_key) if cur_orig_key in orig_keys else 0
-            origin_label = st.selectbox("Starting Location / Hub (शुरुआती जगह)", orig_keys, index=orig_idx, key="sb_origin")
+            origin_label = st.selectbox("Starting Location / Hub", orig_keys, index=orig_idx, key="sb_origin")
             if origin_label in origin_options:
                 st.session_state["origin_node_id"] = origin_options[origin_label]
 
@@ -700,7 +700,7 @@ with st.sidebar:
         if dest_keys:
             cur_dest_key = next((k for k, v in dest_options.items() if v == st.session_state.get("dest_node_id")), dest_keys[min(1, len(dest_keys)-1)])
             dest_idx = dest_keys.index(cur_dest_key) if cur_dest_key in dest_keys else 0
-            dest_label = st.selectbox("Destination Safe Place / Shelter (सुरक्षित जगह)", dest_keys, index=dest_idx, key="sb_dest")
+            dest_label = st.selectbox("Destination Safe Place / Shelter", dest_keys, index=dest_idx, key="sb_dest")
             if dest_options and dest_label in dest_options:
                 st.session_state["dest_node_id"] = dest_options[dest_label]
             else:
@@ -709,15 +709,15 @@ with st.sidebar:
     # SECTION 2: SELECT RESCUE VEHICLE
     with st.expander("🚑 Select Rescue Vehicle (Ambulance, Bus, Boat)", expanded=True):
         vehicle_profiles = {
-            "Ambulance": {"icon": "🚑", "desc": "Ambulance (एम्बुलेंस)", "clearance": "30 cm", "speed": "60 km/h"},
-            "NDRF Truck": {"icon": "🚛", "desc": "Rescue Truck (बचाव ट्रक)", "clearance": "85 cm", "speed": "45 km/h"},
-            "Flood Boat": {"icon": "🚤", "desc": "Flood Rescue Boat (नाव)", "clearance": "Deep Water", "speed": "25 km/h"},
-            "Rapid Response": {"icon": "🚙", "desc": "Quick Relief Jeep (जीप)", "clearance": "45 cm", "speed": "65 km/h"},
-            "Evacuation Bus": {"icon": "🚌", "desc": "Evacuation Bus (राहत बस)", "clearance": "40 cm", "speed": "40 km/h"}
+            "Ambulance": {"icon": "🚑", "desc": "Ambulance", "clearance": "30 cm", "speed": "60 km/h"},
+            "NDRF Truck": {"icon": "🚛", "desc": "Rescue Truck", "clearance": "85 cm", "speed": "45 km/h"},
+            "Flood Boat": {"icon": "🚤", "desc": "Flood Rescue Boat", "clearance": "Deep Water", "speed": "25 km/h"},
+            "Rapid Response": {"icon": "🚙", "desc": "Quick Relief Jeep", "clearance": "45 cm", "speed": "65 km/h"},
+            "Evacuation Bus": {"icon": "🚌", "desc": "Evacuation Bus", "clearance": "40 cm", "speed": "40 km/h"}
         }
         v_keys = list(vehicle_profiles.keys())
         v_idx = v_keys.index(st.session_state["vehicle_type"]) if st.session_state["vehicle_type"] in v_keys else 0
-        selected_v = st.selectbox("Choose Vehicle Type (गाड़ी का प्रकार):", v_keys, index=v_idx, key="sb_veh", format_func=lambda x: f"{vehicle_profiles[x]['icon']} {vehicle_profiles[x]['desc']}")
+        selected_v = st.selectbox("Choose Vehicle Type:", v_keys, index=v_idx, key="sb_veh", format_func=lambda x: f"{vehicle_profiles[x]['icon']} {vehicle_profiles[x]['desc']}")
         st.session_state["vehicle_type"] = selected_v
         
         prof = vehicle_profiles[selected_v]
@@ -726,15 +726,15 @@ with st.sidebar:
     # SECTION 3: CURRENT DANGER LEVEL
     with st.expander("🌊 Current Danger Level (Water logging, Road damage, Debris)", expanded=True):
         st.session_state["water_depth"] = st.slider(
-            "Water on Road (सड़क पर पानी की गहराई) [cm]",
+            "Water Depth on Road (cm)",
             min_value=0, max_value=140, value=int(st.session_state["water_depth"]), step=5, key="sb_water"
         )
         st.session_state["damage_level"] = st.slider(
-            "Road Damage / सड़क टूटने का स्तर (0-10)",
+            "Road Damage Level (0-10)",
             min_value=0.0, max_value=10.0, value=float(st.session_state["damage_level"]), step=0.5, key="sb_damage"
         )
         st.session_state["debris_level"] = st.slider(
-            "Debris & Mud / मलबा और रुकावट (0-10)",
+            "Debris & Obstruction Level (0-10)",
             min_value=0.0, max_value=10.0, value=float(st.session_state["debris_level"]), step=0.5, key="sb_debris"
         )
 
@@ -744,7 +744,7 @@ with st.sidebar:
             debris=st.session_state["debris_level"],
             vehicle_type=st.session_state["vehicle_type"]
         )
-        pass_txt = "✅ YES (रास्ता खुला है)" if ev.get('is_passable', True) else "❌ NO (रास्ता बंद / पानी अधिक है)"
+        pass_txt = "✅ YES (Passable)" if ev.get('is_passable', True) else "❌ NO (Impassable / High Water)"
         st.markdown(f"""
         <div style="background: #f1f5f9; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; margin-top: 5px;">
             <b>Danger Multiplier:</b> <code>{ev.get('risk_multiplier', 1.0)}x</code><br>
@@ -764,7 +764,7 @@ with st.sidebar:
                 pass
             if EMBEDDED_ROUTER_AVAILABLE:
                 embedded_router._build_base_network()
-            st.toast("Form reset! (फॉर्म रीसेट हो गया)")
+            st.toast("Form reset!")
             st.rerun()
 
     with col_out:
@@ -792,7 +792,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Reassuring Friendly Instructions
-st.info("ℹ️ **Welcome to RakshaPath.** Enter your location to find the safest route away from floods or blockages. (बाढ़ या मलबे से सुरक्षित रास्ता खोजने के लिए नीचे अपनी जगह चुनें।)")
+st.info("ℹ️ **Welcome to RakshaPath.** Enter your location to find the safest route away from floods or blockages.")
 
 # Google Maps Style Search Bar & 1-Click GPS in Floating Header
 col_search, col_gps, col_locate = st.columns([4.2, 1.8, 1.2])
@@ -817,7 +817,7 @@ with col_gps:
 with col_locate:
     if st.button("⚠️ Test Flood Warning", use_container_width=True):
         st.session_state["water_depth"] = 85
-        st.toast("Simulated 85cm water on road! (सड़क पर 85cm पानी का टेस्ट)")
+        st.toast("Simulated 85cm water on road!")
         st.rerun()
 
 # Quick Metropolitan City Jump Buttons
@@ -884,27 +884,27 @@ if route_data and route_data.get("success"):
         kpi1, kpi2, kpi3, kpi4 = st.columns(4)
         with kpi1:
             st.metric(
-                label="Safe Route Distance (सुरक्षित दूरी)",
+                label="Safe Route Distance",
                 value=f"{safe_corridor['total_distance_km']} km",
                 delta=f"{round(safe_corridor['total_distance_km'] - shortest_naive.get('total_distance_km', safe_corridor['total_distance_km']), 2)} km safer detour" if route_data.get("is_detour_advised") else "Direct Route Clear"
             )
         with kpi2:
             st.metric(
-                label="Est. Travel Time (पहुंचने का समय)",
+                label="Est. Travel Time",
                 value=f"{safe_corridor['estimated_transit_time_min']} mins",
                 delta=f"{st.session_state['vehicle_type']} @ Safe Speed"
             )
         with kpi3:
             st.metric(
-                label="Road Danger Factor (जोखिम स्तर)",
+                label="Road Danger Factor",
                 value=f"{safe_corridor['average_risk_multiplier']}x",
                 delta=f"-{round(shortest_naive.get('average_risk_multiplier', 1.0) - safe_corridor['average_risk_multiplier'], 1)}x safer vs direct" if route_data.get("is_detour_advised") else "Normal Safe Road",
                 delta_color="inverse"
             )
         with kpi4:
-            status_pass = "🟢 CLEAR & OPEN (रास्ता खुला है)" if safe_corridor.get("is_fully_passable", True) else "🔴 WATERLOGGED / CLOSED"
+            status_pass = "🟢 CLEAR & OPEN" if safe_corridor.get("is_fully_passable", True) else "🔴 WATERLOGGED / CLOSED"
             st.metric(
-                label="Corridor Safety (सुरक्षा स्थिति)",
+                label="Corridor Safety Status",
                 value=route_data.get("safety_status", "SECURED"),
                 delta=status_pass
             )
@@ -1017,7 +1017,7 @@ if route_data and route_data.get("is_detour_advised") and route_data.get("shorte
             weight=4,
             opacity=0.7,
             dash_array="8, 8",
-            tooltip="⚠️ Risky / Blocked Direct Road (खतरनाक सीधा रास्ता)"
+            tooltip="⚠️ Risky / Blocked Direct Road"
         ).add_to(m)
 
 # Render Recommended Safe Corridor (Emerald High-Visibility)
@@ -1029,7 +1029,7 @@ if route_data and route_data.get("safe_corridor"):
             color="#059669",
             weight=7,
             opacity=0.9,
-            tooltip="✅ RakshaPath Recommended Safe Route (सुरक्षित रास्ता)"
+            tooltip="✅ RakshaPath Recommended Safe Route"
         ).add_to(m)
 
 # Render Immersive Folium Map (Large 620px height view)
@@ -1043,16 +1043,16 @@ else:
 # 8. CONTEXTUAL INFORMATION TABS (BELOW MAP)
 # ==========================================
 tab_corridor, tab_comp, tab_units, tab_incident = st.tabs([
-    "🚩 Step-by-Step Directions (रास्ते का विवरण)",
-    "⚖️ Route Safety Comparison (रास्तों की तुलना)",
-    "🚨 Nearby Rescue Vehicles & ETAs (मदद वाहन)",
-    "📝 Report Road Hazard / Blockage (सड़क की समस्या बताएं)"
+    "🚩 Step-by-Step Directions",
+    "⚖️ Route Safety Comparison",
+    "🚨 Nearby Rescue Vehicles & ETAs",
+    "📝 Report Road Hazard / Blockage"
 ])
 
 with tab_corridor:
     if route_data and route_data.get("safe_corridor"):
         segments = route_data["safe_corridor"].get("segments", [])
-        st.write(f"#### Step-by-Step Directions ({len(segments)} road segments / सड़क खंड)")
+        st.write(f"#### Step-by-Step Directions ({len(segments)} road segments)")
         for i, seg in enumerate(segments, 1):
             with st.expander(f"Segment {i}: {seg['road_name']} ({seg['distance_km']} km)", expanded=(i <= 3)):
                 c1, c2, c3, c4 = st.columns(4)
@@ -1068,19 +1068,19 @@ with tab_comp:
         st.write("#### Comparison: Safe Recommended Route vs. Blocked Direct Road")
         comp_col1, comp_col2 = st.columns(2)
         with comp_col1:
-            st.markdown("##### ✅ RakshaPath Safe Route (सुरक्षित रास्ता)")
-            st.write(f"- **Total Distance (कुल दूरी):** {safe_corridor['total_distance_km']} km")
-            st.write(f"- **Average Danger (औसत जोखिम):** {safe_corridor['average_risk_multiplier']}x")
-            st.write(f"- **Maximum Risk Point (अधिकतम खतरा):** {safe_corridor.get('max_risk_multiplier', 1.0)}x")
-            st.write(f"- **Estimated Time (पहुंचने का समय):** {safe_corridor['estimated_transit_time_min']} mins")
-            st.write(f"- **Road Status:** {'✅ Fully Open & Safe (रास्ता खुला है)' if safe_corridor.get('is_fully_passable', True) else '⚠️ Caution Advised'}")
+            st.markdown("##### ✅ RakshaPath Safe Route")
+            st.write(f"- **Total Distance:** {safe_corridor['total_distance_km']} km")
+            st.write(f"- **Average Danger:** {safe_corridor['average_risk_multiplier']}x")
+            st.write(f"- **Maximum Risk Point:** {safe_corridor.get('max_risk_multiplier', 1.0)}x")
+            st.write(f"- **Estimated Time:** {safe_corridor['estimated_transit_time_min']} mins")
+            st.write(f"- **Road Status:** {'✅ Fully Open & Safe' if safe_corridor.get('is_fully_passable', True) else '⚠️ Caution Advised'}")
         with comp_col2:
-            st.markdown("##### ❌ Blocked Direct Road (खतरनाक सीधा रास्ता)")
-            st.write(f"- **Total Distance (कुल दूरी):** {shortest_naive.get('total_distance_km', safe_corridor['total_distance_km'])} km")
-            st.write(f"- **Average Danger (औसत जोखिम):** {shortest_naive.get('average_risk_multiplier', 1.0)}x")
-            st.write(f"- **Maximum Risk Point (अधिकतम खतरा):** {shortest_naive.get('max_risk_multiplier', 1.0)}x")
-            st.write(f"- **Estimated Time (अनुमानित समय):** {shortest_naive.get('estimated_transit_time_min', 0.0)} mins")
-            st.write(f"- **Road Status:** {'Passable' if shortest_naive.get('is_fully_passable', False) else '❌ Impassable due to Water/Damage (पानी या मलबे से बंद)'}")
+            st.markdown("##### ❌ Blocked Direct Road")
+            st.write(f"- **Total Distance:** {shortest_naive.get('total_distance_km', safe_corridor['total_distance_km'])} km")
+            st.write(f"- **Average Danger:** {shortest_naive.get('average_risk_multiplier', 1.0)}x")
+            st.write(f"- **Maximum Risk Point:** {shortest_naive.get('max_risk_multiplier', 1.0)}x")
+            st.write(f"- **Estimated Time:** {shortest_naive.get('estimated_transit_time_min', 0.0)} mins")
+            st.write(f"- **Road Status:** {'Passable' if shortest_naive.get('is_fully_passable', False) else '❌ Impassable due to Water/Damage'}")
 
 with tab_units:
     st.write(f"#### Nearby Available Rescue Vehicles ({st.session_state['selected_state']})")
@@ -1098,11 +1098,11 @@ with tab_units:
 with tab_incident:
     st.write("#### Report a Road Problem (Flooding, Landslide, Fallen Trees)")
     with st.form("incident_report_results_form"):
-        f_title = st.text_input("Problem Title (समस्या का नाम)", value="Waterlogging on Main Road")
-        f_state = st.selectbox("State (राज्य)", all_states, index=all_states.index(st.session_state["selected_state"]) if st.session_state["selected_state"] in all_states else 0)
-        f_dist = st.text_input("District / Area (ज़िला या क्षेत्र)", value=st.session_state["selected_district"] if st.session_state["selected_district"] not in ["All Districts", "All Districts (सभी ज़िले)"] else "Nearby Sector")
-        f_type = st.selectbox("Problem Type (समस्या का प्रकार)", ["Flooding / Waterlogging (जलभराव)", "Landslide / Rockfall (भूस्खलन)", "Debris & Fallen Trees (मलबा व पेड़)", "Bridge Blocked / Damaged (पुल क्षतिग्रस्त)", "Electrical Hazard (बिजली का तार)"])
-        f_sev = st.selectbox("Urgency Level (गंभीरता)", ["Low (सामान्य)", "Medium (मध्यम)", "High (अधिक)", "Critical / Urgent (अति गंभीर)"], index=2)
+        f_title = st.text_input("Problem Title", value="Waterlogging on Main Road")
+        f_state = st.selectbox("State", all_states, index=all_states.index(st.session_state["selected_state"]) if st.session_state["selected_state"] in all_states else 0)
+        f_dist = st.text_input("District / Area", value=st.session_state["selected_district"] if st.session_state["selected_district"] != "All Districts" else "Nearby Sector")
+        f_type = st.selectbox("Problem Type", ["Flooding / Waterlogging", "Landslide / Rockfall", "Debris & Fallen Trees", "Bridge Blocked / Damaged", "Electrical Hazard"])
+        f_sev = st.selectbox("Urgency Level", ["Low", "Medium", "High", "Critical / Urgent"], index=2)
 
         c_lat, c_lon = st.columns(2)
         with c_lat:
@@ -1110,12 +1110,12 @@ with tab_incident:
         with c_lon:
             f_lon = st.number_input("Longitude", value=map_center[1], format="%.4f")
 
-        f_water = st.number_input("Water Depth on Road in cm (सड़क पर पानी)", value=50.0, min_value=0.0)
-        f_damage = st.slider("Road Damage / सड़क टूटने का स्तर (0-10)", 0.0, 10.0, 6.0)
-        f_debris = st.slider("Debris / Obstruction Level (मलबे का स्तर 0-10)", 0.0, 10.0, 4.0)
-        f_desc = st.text_area("Details (विवरण)", value="Rising water levels on road, movement difficult.")
+        f_water = st.number_input("Water Depth on Road (cm)", value=50.0, min_value=0.0)
+        f_damage = st.slider("Road Damage Level (0-10)", 0.0, 10.0, 6.0)
+        f_debris = st.slider("Debris & Obstruction Level (0-10)", 0.0, 10.0, 4.0)
+        f_desc = st.text_area("Details", value="Rising water levels on road, movement difficult.")
 
-        submitted = st.form_submit_button("Send Incident Report (रिपोर्ट भेजें)")
+        submitted = st.form_submit_button("Send Incident Report")
         if submitted:
             try:
                 res = requests.post(f"{BACKEND_URL}/api/incidents", json={

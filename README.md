@@ -21,9 +21,9 @@
    - Accounts for **water inundation depth (cm)**, **structural damage level (0–10)**, and **debris obstruction (0–10)**.
    - Vehicle capability profiles: *Life Support Ambulance, NDRF Heavy Truck, Tactical Flood Boat, Rapid Response 4x4, Evacuation Bus*.
 
-3. **Immersive GIS-First Tactical Interface & Citizen-Friendly Language**:
+3. **Immersive GIS-First Interface & Clean Everyday English**:
    - Expansive 620px interactive OpenStreetMap topology map taking center stage (free of tile watermarks).
-   - Intuitive everyday language and bilingual terminology (English + Hindi) allowing both emergency responders and everyday citizens to navigate effortlessly.
+   - Intuitive, clear everyday English terminology allowing both emergency responders and everyday citizens to navigate effortlessly.
    - Floating top hero bar with Google Maps–style landmark search, 1-click GPS device geolocation, and quick city jump presets (*Delhi, Lucknow, Agra, Varanasi, Dehradun, Mumbai*).
    - Floating route metrics HUD directly above the map: Safe Route Distance, Est. Travel Time, Road Danger Factor, and Safety Status.
    - Collapsible docked control sidebar housing multi-state origin/shelter selection, rescue vehicle profiles, and real-time danger level sliders.
