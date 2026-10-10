@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, AlertTriangle, Navigation } from 'lucide-react';
+import { Search, MapPin, AlertTriangle, Navigation, LogOut, UserCheck } from 'lucide-react';
 import { searchLocations } from '../services/api';
 
 const CITY_PRESETS = [
@@ -18,7 +18,9 @@ export default function Header({
   onSelectCity,
   onUseLocation,
   onSimulateFlood,
-  onSelectSearchNode
+  onSelectSearchNode,
+  userRole,
+  onSwitchRole
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -127,6 +129,18 @@ export default function Header({
             <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
             <span className="whitespace-nowrap">Test Flood Warning</span>
           </button>
+
+          {/* Switch Role Button */}
+          {onSwitchRole && (
+            <button
+              onClick={onSwitchRole}
+              className="hidden lg:flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 rounded-xl text-xs font-semibold transition-all active:scale-95"
+              title="Return to Welcome Screen to switch role"
+            >
+              <LogOut className="w-3.5 h-3.5 text-slate-400" />
+              <span className="whitespace-nowrap">Switch Role</span>
+            </button>
+          )}
         </div>
       </div>
 

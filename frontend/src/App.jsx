@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import WelcomeScreen from './components/WelcomeScreen';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import TelemetryCards from './components/TelemetryCards';
 import MapView from './components/MapView';
-import BottomDrawer from './components/BottomDrawer';
+import DetailedReportSection from './components/DetailedReportSection';
 import { 
   fetchStates, 
   fetchNodes, 
@@ -17,6 +17,9 @@ import {
 } from './services/api';
 
 export default function App() {
+  // STAGE 1: User Role & Onboarding State (null shows Welcome Screen)
+  const [userRole, setUserRole] = useState(null);
+
   // Navigation & Hierarchy State
   const [statesData, setStatesData] = useState({});
   const [selectedState, setSelectedState] = useState('Delhi NCR');
@@ -191,9 +194,19 @@ export default function App() {
     computeRoute();
   };
 
+  // STAGE 1: Render Welcome Screen if no role has been chosen yet
+  if (!userRole) {
+    return (
+      <WelcomeScreen 
+        onSelectRole={(role) => setUserRole(role)} 
+      />
+    );
+  }
+
+  // STAGE 2 & STAGE 3: Main Dashboard Layout
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
-      {/* 1. LEFT SIDE: Fixed Sidebar Control Panel */}
+      {/* STAGE 2 (LEFT): Scrollable Sidebar Control Panel */}
       <Sidebar
         statesData={statesData}
         selectedState={selectedState}
@@ -218,27 +231,25 @@ export default function App() {
         onCalculateRoute={computeRoute}
         isCalculating={isCalculating}
         onResetForm={handleResetForm}
+        userRole={userRole}
+        onSwitchRole={() => setUserRole(null)}
       />
 
-      {/* 2. RIGHT SIDE: Main Content Area (Header + Telemetry + Map + Analysis Drawer) */}
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-950">
-        {/* Top Header Search & Controls */}
+      {/* STAGE 2 (RIGHT) & STAGE 3: Main Content Area (Header + Map + Dedicated Report Section Below Map) */}
+      <main className="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950 relative">
+        {/* Top Header Search, Quick Jumpers, Role Controls */}
         <Header
           selectedState={selectedState}
           onSelectCity={handleSelectCity}
           onUseLocation={handleUseLocation}
           onSimulateFlood={handleSimulateFlood}
           onSelectSearchNode={handleSelectSearchNode}
+          userRole={userRole}
+          onSwitchRole={() => setUserRole(null)}
         />
 
-        {/* Top Telemetry Metrics Banner */}
-        <TelemetryCards
-          routeData={routeData}
-          vehicleType={vehicleType}
-        />
-
-        {/* Interactive Leaflet Map Canvas */}
-        <div className="flex-1 relative w-full h-full">
+        {/* STAGE 2: Interactive Leaflet Map Canvas */}
+        <div className="w-full h-[420px] lg:h-[480px] shrink-0 relative border-b border-slate-800">
           <MapView
             nodes={allNodes}
             hazards={hazards}
@@ -250,13 +261,18 @@ export default function App() {
           />
         </div>
 
-        {/* Bottom Contextual Analysis Drawer */}
-        <BottomDrawer
+        {/* STAGE 3: Prominent Detailed Incident & Route Report Section directly underneath the map */}
+        <DetailedReportSection
           routeData={routeData}
+          vehicleType={vehicleType}
+          waterDepth={waterDepth}
+          damageLevel={damageLevel}
+          debrisLevel={debrisLevel}
           selectedState={selectedState}
           selectedDistrict={selectedDistrict}
           units={units}
           onIncidentReported={handleIncidentReported}
+          userRole={userRole}
         />
       </main>
     </div>

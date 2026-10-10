@@ -9,7 +9,9 @@ import {
   Activity,
   Sliders,
   CheckCircle2,
-  AlertOctagon
+  AlertOctagon,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 
 const VEHICLE_OPTIONS = [
@@ -43,19 +45,21 @@ export default function Sidebar({
   hazardEvaluation,
   onCalculateRoute,
   isCalculating,
-  onResetForm
+  onResetForm,
+  userRole,
+  onSwitchRole
 }) {
   const statesList = Object.keys(statesData);
   const districtsList = ['All Districts', ...(statesData[selectedState] || [])];
   const activeVehicle = VEHICLE_OPTIONS.find((v) => v.id === vehicleType) || VEHICLE_OPTIONS[0];
 
   return (
-    <aside className="w-80 lg:w-96 h-full flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col z-20 shadow-2xl">
-      {/* Brand Header */}
-      <div className="p-4 border-b border-slate-800 bg-slate-950 flex flex-col gap-2">
+    <aside className="w-80 lg:w-[390px] h-full flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col z-20 shadow-2xl">
+      {/* Brand Header & Role Switcher */}
+      <div className="p-4 border-b border-slate-800 bg-slate-950 flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-base">
+            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-base shadow-inner">
               🛡️
             </div>
             <div>
@@ -73,29 +77,46 @@ export default function Sidebar({
           </span>
         </div>
 
-        {/* User Session Badge */}
+        {/* User Session Role Bar & Switch Role Button */}
         <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px]">
-          <span className="text-slate-400">Session Role:</span>
-          <span className="font-semibold text-sky-400">Citizen / Responder</span>
+          <div className="flex items-center gap-1.5">
+            <UserCheck className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-slate-400">Role:</span>
+            <span className="font-bold text-sky-300">
+              {userRole === 'Field Responder / Evaluator' ? 'Field Responder' : (userRole || 'Citizen')}
+            </span>
+          </div>
+
+          {onSwitchRole && (
+            <button
+              type="button"
+              onClick={onSwitchRole}
+              className="text-[10px] font-semibold text-slate-400 hover:text-white flex items-center gap-1 hover:underline transition-colors"
+              title="Return to Welcome Screen to switch role"
+            >
+              <LogOut className="w-3 h-3 text-slate-400" />
+              <span>Switch Role</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Structured Vertical Multi-Step Form */}
+      {/* Structured Vertical Multi-Step Form (Scrollable) */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* STEP 1: CHOOSE LOCATION */}
-        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-850">
+        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3 shadow-sm">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800">
             <div className="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 font-bold flex items-center justify-center text-xs">
               1
             </div>
             <h2 className="text-xs font-bold text-white uppercase tracking-wider">
-              Choose Location & Check Road Dangers
+              Choose Location & Safe Shelter
             </h2>
           </div>
 
           {/* State Select */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-400 mb-1">State / UT</label>
+            <label className="block text-[11px] font-medium text-slate-400 mb-1">State / Region</label>
             <select
               value={selectedState}
               onChange={(e) => onStateChange(e.target.value)}
@@ -155,8 +176,8 @@ export default function Sidebar({
         </div>
 
         {/* STEP 2: SELECT RESCUE VEHICLE */}
-        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-850">
+        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3 shadow-sm">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800">
             <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center text-xs">
               2
             </div>
@@ -189,13 +210,13 @@ export default function Sidebar({
           </div>
 
           <div className="text-[11px] text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-            Selected Vehicle: <strong className="text-white">{activeVehicle.label}</strong> (Max Wading: <code>{activeVehicle.clearance}</code>, Base Speed: <code>{activeVehicle.speed}</code>)
+            Selected Vehicle: <strong className="text-white">{activeVehicle.label}</strong> (Max Clearance: <code>{activeVehicle.clearance}</code>, Cruising Speed: <code>{activeVehicle.speed}</code>)
           </div>
         </div>
 
         {/* STEP 3: CURRENT DANGER LEVELS */}
-        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-850">
+        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3 shadow-sm">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800">
             <div className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 font-bold flex items-center justify-center text-xs">
               3
             </div>
@@ -219,6 +240,11 @@ export default function Sidebar({
               onChange={(e) => onWaterDepthChange(Number(e.target.value))}
               className="w-full accent-sky-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
             />
+            <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
+              <span>0 cm (Dry)</span>
+              <span>45 cm (Moderate)</span>
+              <span>140 cm (Flooded)</span>
+            </div>
           </div>
 
           {/* Road Damage */}
@@ -259,19 +285,19 @@ export default function Sidebar({
           {hazardEvaluation && (
             <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] space-y-1">
               <div className="flex justify-between">
-                <span className="text-slate-400">Hazard Multiplier:</span>
+                <span className="text-slate-400">Calculated Risk Multiplier:</span>
                 <span className="font-mono font-bold text-white">{hazardEvaluation.risk_multiplier}x</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Road Condition:</span>
+                <span className="text-slate-400">Road Surface Condition:</span>
                 <span style={{ color: hazardEvaluation.color }} className="font-bold">
                   {hazardEvaluation.grade}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Can Vehicle Pass?:</span>
+                <span className="text-slate-400">Can Vehicle Navigate?:</span>
                 <span className={hazardEvaluation.is_passable ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
-                  {hazardEvaluation.is_passable ? '✅ YES (Passable)' : '❌ NO (Impassable / High Water)'}
+                  {hazardEvaluation.is_passable ? '✅ Passable' : '❌ Impassable (High Water)'}
                 </span>
               </div>
             </div>
