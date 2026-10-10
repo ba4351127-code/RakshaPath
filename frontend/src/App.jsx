@@ -197,9 +197,11 @@ export default function App() {
   // STAGE 1: Render Welcome Screen if no role has been chosen yet
   if (!userRole) {
     return (
-      <WelcomeScreen 
-        onSelectRole={(role) => setUserRole(role)} 
-      />
+      <div className="min-h-screen overflow-y-auto w-full py-8 bg-slate-950 font-sans text-slate-100">
+        <WelcomeScreen 
+          onSelectRole={(role) => setUserRole(role)} 
+        />
+      </div>
     );
   }
 

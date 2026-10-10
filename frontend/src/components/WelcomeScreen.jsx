@@ -21,13 +21,12 @@ export default function WelcomeScreen({ onSelectRole }) {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-slate-950 font-sans text-slate-100 flex flex-col justify-between selection:bg-sky-500 selection:text-white relative overflow-x-hidden">
+    <div className="w-full max-w-5xl mx-auto flex flex-col justify-between selection:bg-sky-500 selection:text-white relative px-4 sm:px-6">
       {/* Background Decorative Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-sky-600/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-t from-emerald-600/10 via-transparent to-transparent blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-sky-600/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
       {/* Top National Branding Bar */}
-      <header className="w-full px-6 py-4 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md flex items-center justify-between">
+      <header className="w-full py-4 border-b border-slate-800/80 bg-slate-950/80 rounded-2xl px-5 mb-8 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-lg shadow-inner">
             🛡️
@@ -51,9 +50,9 @@ export default function WelcomeScreen({ onSelectRole }) {
       </header>
 
       {/* Hero Content & Role Selection */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-5xl mx-auto w-full z-10">
+      <main className="w-full flex flex-col items-center justify-center z-10 space-y-8">
         {/* Title & Mission Statement */}
-        <div className="text-center space-y-3 max-w-3xl mb-8">
+        <div className="text-center space-y-3 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-300 text-xs font-semibold">
             <Compass className="w-3.5 h-3.5 text-sky-400 animate-spin" style={{ animationDuration: '8s' }} />
             Disaster Evacuation & Corridor Logistics Platform
@@ -72,9 +71,9 @@ export default function WelcomeScreen({ onSelectRole }) {
         </div>
 
         {/* STAGE 1: ROLE SELECTION CARDS */}
-        <div className="w-full max-w-3xl space-y-3 mb-8">
+        <div className="w-full max-w-3xl space-y-4">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">
-            Step 1: Select Your User Role to Enter
+            Select Your Role to Enter
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,7 +82,7 @@ export default function WelcomeScreen({ onSelectRole }) {
               onClick={() => setSelectedRole('Citizen')}
               className={`cursor-pointer rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between ${
                 selectedRole === 'Citizen'
-                  ? 'bg-gradient-to-b from-sky-950/60 to-slate-900 border-sky-400 shadow-xl shadow-sky-500/15 ring-2 ring-sky-500/30'
+                  ? 'bg-gradient-to-b from-sky-950/70 to-slate-900 border-sky-400 shadow-xl shadow-sky-500/20 ring-2 ring-sky-500/40'
                   : 'bg-slate-900/60 border-slate-800 hover:bg-slate-900 hover:border-slate-700'
               }`}
             >
@@ -127,8 +126,8 @@ export default function WelcomeScreen({ onSelectRole }) {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold">
-                <span className={selectedRole === 'Citizen' ? 'text-sky-300' : 'text-slate-500'}>
-                  {selectedRole === 'Citizen' ? 'Active Selection' : 'Click to Select'}
+                <span className={selectedRole === 'Citizen' ? 'text-sky-300 font-bold' : 'text-slate-500'}>
+                  {selectedRole === 'Citizen' ? '● Active Selection' : 'Click to Select'}
                 </span>
                 <span className="text-sky-400">Standard Access</span>
               </div>
@@ -139,7 +138,7 @@ export default function WelcomeScreen({ onSelectRole }) {
               onClick={() => setSelectedRole('Field Responder / Evaluator')}
               className={`cursor-pointer rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between ${
                 selectedRole === 'Field Responder / Evaluator'
-                  ? 'bg-gradient-to-b from-amber-950/40 to-slate-900 border-amber-400 shadow-xl shadow-amber-500/15 ring-2 ring-amber-500/30'
+                  ? 'bg-gradient-to-b from-amber-950/50 to-slate-900 border-amber-400 shadow-xl shadow-amber-500/20 ring-2 ring-amber-500/40'
                   : 'bg-slate-900/60 border-slate-800 hover:bg-slate-900 hover:border-slate-700'
               }`}
             >
@@ -183,8 +182,8 @@ export default function WelcomeScreen({ onSelectRole }) {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold">
-                <span className={selectedRole === 'Field Responder / Evaluator' ? 'text-amber-300' : 'text-slate-500'}>
-                  {selectedRole === 'Field Responder / Evaluator' ? 'Active Selection' : 'Click to Select'}
+                <span className={selectedRole === 'Field Responder / Evaluator' ? 'text-amber-300 font-bold' : 'text-slate-500'}>
+                  {selectedRole === 'Field Responder / Evaluator' ? '● Active Selection' : 'Click to Select'}
                 </span>
                 <span className="text-amber-400">Command Console</span>
               </div>
@@ -192,25 +191,25 @@ export default function WelcomeScreen({ onSelectRole }) {
           </div>
         </div>
 
-        {/* Enter Command Center Action Button */}
-        <div className="flex flex-col items-center gap-3">
+        {/* VISIBLE & PROMINENT ENTER COMMAND CENTER BUTTON */}
+        <div className="w-full max-w-md mx-auto pt-2 pb-6 flex flex-col items-center gap-3">
           <button
             type="button"
             onClick={handleProceed}
-            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-xl shadow-sky-600/30 flex items-center gap-3 transition-all transform active:scale-95"
+            className="w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-extrabold text-sm sm:text-base tracking-wide shadow-2xl shadow-sky-600/40 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer ring-2 ring-sky-400/30"
           >
             <span>Enter Command Center as {selectedRole === 'Citizen' ? 'Citizen' : 'Field Responder'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-5 h-5 text-white" />
           </button>
-          <p className="text-[11px] text-slate-500">
-            You can switch your role or exit back to this screen anytime from the dashboard header.
+          <p className="text-xs text-slate-400 text-center">
+            Click to launch the emergency navigation grid and calculate safe corridors.
           </p>
         </div>
       </main>
 
       {/* Bottom Infrastructure Metric Strip */}
-      <footer className="w-full border-t border-slate-800/80 bg-slate-950/80 px-6 py-3.5">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+      <footer className="w-full border-t border-slate-800/80 bg-slate-950/80 rounded-2xl px-6 py-4 mt-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
