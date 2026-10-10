@@ -2,31 +2,26 @@ import React, { useState } from 'react';
 import { 
   Shield, 
   Truck, 
-  ArrowRight, 
   CheckCircle2, 
-  AlertTriangle, 
-  MapPin, 
-  Radio, 
-  Activity,
   Compass
 } from 'lucide-react';
 
 export default function WelcomeScreen({ onSelectRole }) {
   const [selectedRole, setSelectedRole] = useState('Citizen');
 
-  const handleProceed = () => {
+  const handleEnter = () => {
     if (onSelectRole) {
       onSelectRole(selectedRole);
     }
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col justify-between selection:bg-sky-500 selection:text-white relative px-4 sm:px-6">
-      {/* Background Decorative Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-sky-600/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none -z-10" />
+    <div className="min-h-screen h-auto overflow-y-auto pb-20 w-full bg-slate-950 font-sans text-slate-100 flex flex-col justify-between selection:bg-sky-500 selection:text-white relative px-4 sm:px-6">
+      {/* Background Decorative Glow (non-fixed, non-clipping) */}
+      <div className="w-[800px] h-[300px] bg-gradient-to-b from-sky-600/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none mx-auto -mb-[300px]" />
 
       {/* Top National Branding Bar */}
-      <header className="w-full py-4 border-b border-slate-800/80 bg-slate-950/80 rounded-2xl px-5 mb-8 flex items-center justify-between shadow-lg">
+      <header className="w-full max-w-5xl mx-auto py-4 border-b border-slate-800/80 bg-slate-950/80 rounded-2xl px-5 my-6 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-lg shadow-inner">
             🛡️
@@ -50,7 +45,7 @@ export default function WelcomeScreen({ onSelectRole }) {
       </header>
 
       {/* Hero Content & Role Selection */}
-      <main className="w-full flex flex-col items-center justify-center z-10 space-y-8">
+      <main className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center z-10 space-y-8">
         {/* Title & Mission Statement */}
         <div className="text-center space-y-3 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-300 text-xs font-semibold">
@@ -191,24 +186,24 @@ export default function WelcomeScreen({ onSelectRole }) {
           </div>
         </div>
 
-        {/* VISIBLE & PROMINENT ENTER COMMAND CENTER BUTTON */}
-        <div className="w-full max-w-md mx-auto pt-2 pb-6 flex flex-col items-center gap-3">
+        {/* LARGE CENTERED PROMINENT ACTION BUTTON DIRECTLY BELOW CARDS */}
+        <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto">
           <button
             type="button"
-            onClick={handleProceed}
-            className="w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-extrabold text-sm sm:text-base tracking-wide shadow-2xl shadow-sky-600/40 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer ring-2 ring-sky-400/30"
+            onClick={handleEnter}
+            className="mt-8 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg shadow-blue-600/40 cursor-pointer flex items-center justify-center gap-3 transition-all transform hover:scale-105 active:scale-95 w-full"
           >
-            <span>Enter Command Center as {selectedRole === 'Citizen' ? 'Citizen' : 'Field Responder'}</span>
-            <ArrowRight className="w-5 h-5 text-white" />
+            <span>Enter Command Center</span>
+            <span>&rarr;</span>
           </button>
-          <p className="text-xs text-slate-400 text-center">
-            Click to launch the emergency navigation grid and calculate safe corridors.
+          <p className="text-xs text-slate-400 mt-2.5 text-center">
+            Proceeding as: <strong className="text-sky-300 font-semibold">{selectedRole}</strong>
           </p>
         </div>
       </main>
 
       {/* Bottom Infrastructure Metric Strip */}
-      <footer className="w-full border-t border-slate-800/80 bg-slate-950/80 rounded-2xl px-6 py-4 mt-8">
+      <footer className="w-full max-w-5xl mx-auto border-t border-slate-800/80 bg-slate-950/80 rounded-2xl px-6 py-4 mt-12 mb-4">
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-2">
