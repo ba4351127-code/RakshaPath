@@ -1,13 +1,17 @@
-# 🛡️ RakshaPath (रक्षापथ)
-### National Emergency Mobility Network • Autonomous Disaster Corridor AI
+# 🛡️ RakshaPath
+### National Emergency Mobility Network • Production Full-Stack Architecture
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.25%2B-FF4B4B.svg)](https://streamlit.io/)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB.svg)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC.svg)](https://tailwindcss.com/)
+[![Leaflet](https://img.shields.io/badge/Leaflet-1.9-199900.svg)](https://leafletjs.com/)
 [![NetworkX](https://img.shields.io/badge/NetworkX-A*_Routing-orange.svg)](https://networkx.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**RakshaPath** is an autonomous tactical emergency routing system built for disaster management authorities (NDRF, SDRF, EMS, Civil Defense). It computes **risk-weighted safe corridors** across floodwaters, landslide rubble, and damaged roadways using physical hazard penalty models and NetworkX A* algorithms.
+**RakshaPath** is an autonomous tactical emergency routing system built for disaster management authorities (NDRF, SDRF, EMS, Civil Defense) and citizens. It computes **risk-weighted safe corridors** across floodwaters, landslide rubble, and damaged roadways using physical hazard penalty models and NetworkX A* algorithms.
+
+Migrated to a production-ready **Full-Stack Architecture** featuring a high-performance **FastAPI REST Backend** and an immersive **React + Vite + Tailwind CSS + Leaflet GIS Frontend**.
 
 ---
 
@@ -17,25 +21,29 @@
    - Compares physical road distances against composite hazard multipliers.
    - Dynamically reroutes rescue teams around submerged bridges and damaged roadways while contrasting against naive direct routes.
 
-2. **Physical Hazard Engine**:
-   - Accounts for **water inundation depth (cm)**, **structural damage level (0–10)**, and **debris obstruction (0–10)**.
-   - Vehicle capability profiles: *Life Support Ambulance, NDRF Heavy Truck, Tactical Flood Boat, Rapid Response 4x4, Evacuation Bus*.
+2. **Physical Hazard Engine & Vehicle Profiles**:
+   - Accounts for water inundation depth (cm), structural roadway damage (0–10), and debris obstruction (0–10).
+   - Dynamic asset profiles: *Ambulance, Rescue Truck, Flood Rescue Boat, Quick Relief Jeep, Evacuation Bus*.
 
-3. **Immersive GIS-First Interface & Clean Everyday English**:
-   - Expansive 620px interactive OpenStreetMap topology map taking center stage (free of tile watermarks).
-   - Intuitive, clear everyday English terminology allowing both emergency responders and everyday citizens to navigate effortlessly.
-   - Floating top hero bar with Google Maps–style landmark search, 1-click GPS device geolocation, and quick city jump presets (*Delhi, Lucknow, Agra, Varanasi, Dehradun, Mumbai*).
-   - Floating route metrics HUD directly above the map: Safe Route Distance, Est. Travel Time, Road Danger Factor, and Safety Status.
-   - Collapsible docked control sidebar housing multi-state origin/shelter selection, rescue vehicle profiles, and real-time danger level sliders.
+3. **Immersive GIS-First Map Interface (React + Leaflet)**:
+   - Full-viewport interactive OpenStreetMap topology map free of watermarks or API keys.
+   - Live color-coded infrastructure markers: *Hospitals, Shelters, NDRF Bases, Command Centers, Helipads*.
+   - Dynamic danger zones with pulsating hazard radius rings.
+   - High-visibility emerald safe corridor polyline contrasted with dashed red blocked routes.
 
-4. **Embedded Standalone Engine for Cloud Deployment**:
-   - Features a built-in NetworkX A* routing engine fallback inside the Streamlit frontend.
-   - Automatically computes risk-weighted corridors locally if deployed on Streamlit Community Cloud without requiring an external FastAPI Uvicorn server (`Core: ONLINE (Embedded Engine)`).
+4. **Floating Telemetry HUD & Search Header**:
+   - Real-time corridor telemetry cards: *Safe Route Distance, Est. Travel Time, Road Danger Factor, Corridor Safety Status*.
+   - Landmark search with instant autocomplete (AIIMS Delhi, SGPGI Lucknow, Agra Fort, KEM Mumbai).
+   - 1-Click *"Use My Device Location"* GPS resolver snapping to the nearest emergency hub.
+   - Quick metropolitan city jumpers (*Delhi NCR, Lucknow, Agra, Varanasi, Dehradun, Mumbai, Patna, Kolkata*).
 
-5. **Disaster Management Auth & Ground Transmission Portal**:
-   - Tactical responder authentication with badge identification.
-   - Real-time ground incident reporting terminal saving directly to SQLite database.
-   - Tabbed post-route analysis: turn-by-turn waypoints, comparative safety metrics, and regional fleet deployment ETAs.
+5. **Docked Control Drawer & Multi-Tab Analysis**:
+   - State & District hierarchy selectors with guaranteed fallbacks.
+   - Real-time physics hazard calibration sliders with instant risk evaluation.
+   - Turn-by-turn waypoint breakdown with individual segment risk and transit estimates.
+   - Algorithmic safety comparison table (Safe A* vs. Blocked Direct Road).
+   - Dispatched rescue units with reaching ETAs and water clearance limits.
+   - Interactive road hazard transmission form.
 
 ---
 
@@ -43,40 +51,69 @@
 
 ```
 RakshaPath/
-├── requirements.txt           # Dependencies
-├── .gitignore                 # Git ignore rules
+├── requirements.txt           # Unified Python dependencies
 ├── backend/
-│   ├── database.py            # SQLite ORM models (RescueUnits & Incidents) + Auto-seeder
-│   ├── hazard_engine.py       # Physics-based risk multiplier models
+│   ├── main.py                # FastAPI REST application with CORS enabled
 │   ├── router.py              # Multi-state NetworkX A* emergency corridor graph
-│   └── main.py                # FastAPI REST API & search endpoints
+│   ├── hazard_engine.py       # Physics-based risk multiplier models
+│   ├── database.py            # SQLite ORM models (RescueUnits & Incidents) + Auto-seeder
+│   ├── schemas.py             # Pydantic v2 data models for requests & responses
+│   └── requirements.txt       # Dedicated backend dependencies for Render/Docker
 └── frontend/
-    └── app.py                 # Streamlit tactical command dashboard with Folium maps
+    ├── index.html             # Application entry point with Leaflet & Inter fonts
+    ├── vite.config.js         # Vite configuration with /api backend proxy
+    ├── tailwind.config.js     # Tailwind CSS theme configuration
+    ├── postcss.config.js      # PostCSS configuration
+    ├── package.json           # Node.js dependencies and build scripts
+    └── src/
+        ├── main.jsx           # React DOM root
+        ├── App.jsx            # Main GIS application container
+        ├── index.css          # Tailwind CSS and Leaflet custom styles
+        ├── services/
+        │   └── api.js         # Frontend REST API client
+        └── components/
+            ├── Header.jsx         # Floating brand bar, search & city presets
+            ├── TelemetryCards.jsx # Route HUD metrics cards
+            ├── Sidebar.jsx        # Docked location, vehicle & hazard controls
+            ├── MapView.jsx        # Leaflet OpenStreetMap interactive viewport
+            └── BottomDrawer.jsx   # Directions, comparison, fleet & report tabs
 ```
 
 ---
 
 ## 🚀 Quick Start Guide
 
-### 1. Installation
-Clone this repository and install dependencies:
+### 1. Start the FastAPI Backend
 ```bash
-git clone https://github.com/ba4351127-code/RakshaPath.git
-cd RakshaPath
-pip install -r requirements.txt
-```
-
-### 2. Start Backend API
-```bash
+# From project root
+pip install -r backend/requirements.txt
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-API runs at `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`).
+API runs at `http://localhost:8000` (Interactive Swagger docs at `http://localhost:8000/docs`).
 
-### 3. Start Frontend Dashboard
+### 2. Start the React Frontend
 ```bash
-python -m streamlit run frontend/app.py --server.port 8501
+# In the frontend directory
+cd frontend
+npm install
+npm run dev
 ```
-Open `http://localhost:8501` in your browser.
+Open `http://localhost:5173` in your browser.
+
+---
+
+## 🌐 Production Deployment
+
+- **Backend (Render / Railway / Fly.io):**
+  - Root directory: `backend` (or root)
+  - Build command: `pip install -r backend/requirements.txt`
+  - Start command: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+
+- **Frontend (Vercel / Netlify / Cloudflare Pages):**
+  - Root directory: `frontend`
+  - Build command: `npm run build`
+  - Output directory: `dist`
+  - Environment variable: `VITE_API_URL=https://your-backend-api.onrender.com`
 
 ---
 
