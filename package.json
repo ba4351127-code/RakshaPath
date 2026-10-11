@@ -1,0 +1,12 @@
+{
+  "name": "rakshapath",
+  "version": "2.0.0",
+  "private": true,
+  "description": "National Emergency Mobility Network - Tactical Evacuation & Rescue Routing",
+  "scripts": {
+    "install": "cd frontend && npm install --no-audit --no-fund",
+    "build": "cd frontend && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "preview": "cd frontend && npm run preview"
+  }
+}
