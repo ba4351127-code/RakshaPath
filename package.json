@@ -4,8 +4,8 @@
   "private": true,
   "description": "National Emergency Mobility Network - Tactical Evacuation & Rescue Routing",
   "scripts": {
-    "install": "cd frontend && npm install --no-audit --no-fund",
-    "build": "cd frontend && npm run build",
+    "install": "node install.js",
+    "build": "node build.js",
     "dev": "cd frontend && npm run dev",
     "preview": "cd frontend && npm run preview"
   }
